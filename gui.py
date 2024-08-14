@@ -1,11 +1,21 @@
 from typing import ClassVar
+from uuid import uuid4
 
+from rich.highlighter import Highlighter
 from textual import on
 from textual.app import App, ComposeResult
 from textual.binding import Binding, BindingType
+from textual.suggester import Suggester
+from textual.validation import Validator
 from textual.widgets import Header, Footer, ListView, ListItem, Input, Label
 from textual import widgets as wgt
 from textual.reactive import reactive
+
+
+class Player:
+    def __init__(self, name: str) -> None:
+        self.id = uuid4()
+        self.name = name
 
 
 class PlayerInput(Input):
@@ -30,6 +40,10 @@ class PlayerInput(Input):
         Binding("down", "cursor_down", "cursor down", show=False),
     ]
 
+    def __init__(self, player_name: str, player_id: str, **kwargs) -> None:
+        super().__init__(player_name, **kwargs)
+        self.player_id = player_id
+
     def on_mount(self) -> None:
         self.focus()
 
@@ -40,8 +54,7 @@ class PlayerInput(Input):
 class DartsApp(App):
     ENABLE_COMMAND_PALETTE = False
 
-    currently_focused = reactive("")
-    players: reactive[list[str]] = reactive([""], recompose=True)
+    players: reactive[dict] = reactive({}, recompose=True)
 
     BINDINGS = [
         Binding(key="q", action="quit", description="Quit the app"),
@@ -56,31 +69,31 @@ class DartsApp(App):
     ]
 
     def action_add_player(self) -> None:
-        self.players.append("")
+        new_player = Player(None)
+        self.players.update({new_player.id: new_player})
+        
         self.mutate_reactive(DartsApp.players)
 
-    @on(Event.Focus)
-
-    @on(PlayerInput.Changed)
-    def update_players(self, event: PlayerInput.Changed) -> None:
-        pass
-
     @on(PlayerInput.Submitted)
-    def update_players(self, event: PlayerInput.Submitted) -> None:
-        pass
+    def update_players_s(self, event: PlayerInput.Submitted) -> None:
+        player_id = event.input.player_id
+
+        player = self.players.get(player_id)
+        player.name = event.value
+
+        self.mutate_reactive(DartsApp.players)
 
     def compose(self) -> ComposeResult:
         self.title = "Efidarts"
         yield Header()
         yield ListView(
-            *[ListItem(PlayerInput(player, placeholder="Player name")) for player in self.players]
+            *[ListItem(PlayerInput(player.name, player.id, placeholder="Player name")) for player in self.players.values()]
         )
         yield wgt.Button("Begin game")
         yield Label(f"Player count: {len(self.players)}")
         yield wgt.Rule()
-        yield wgt.Pretty(self.players)
-        # yield wgt.Label(f"{self.focused.name if self.focused else 'no focus'}")
-        yield wgt.Label(f"{self.currently_focused}")
+        # yield from [wgt.Pretty(player) for player in self.players]
+        yield from [wgt.Pretty(f"{player.id}    {player.name}") for player in self.players.values()]
         yield Footer()
 
 
