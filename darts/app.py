@@ -1,6 +1,7 @@
 from enum import Enum
 from textual.app import App
 
+from darts.screens.game import GameScreen
 from darts.screens.main_menu import MainMenuScreen
 from darts.screens.splash import SplashScreen
 
