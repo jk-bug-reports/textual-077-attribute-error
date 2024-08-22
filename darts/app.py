@@ -14,11 +14,11 @@ class AppScreens(Enum):
 
 class DartsApp(App):
     SCREENS = {
-        AppScreens.SPLASH.name: SplashScreen(),
-        AppScreens.MAIN_MENU.name: MainMenuScreen(),
-        AppScreens.GAME.name: GameScreen(),
+        AppScreens.SPLASH.name: SplashScreen,
+        AppScreens.MAIN_MENU.name: MainMenuScreen,
+        AppScreens.GAME.name: GameScreen,
     }
 
     def on_mount(self) -> None:
         self.push_screen(AppScreens.MAIN_MENU.name)
-        self.push_screen(AppScreens.SPLASH.name)
+        # self.push_screen(AppScreens.SPLASH.name)
