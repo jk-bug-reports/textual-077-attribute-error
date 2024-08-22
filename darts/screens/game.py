@@ -16,7 +16,7 @@ class Player:
         self.run_action("focus_next")
 
 
-class PlayerSettingsScreen(Screen):
+class GameScreen(Screen):
     players_text: reactive[str] = reactive("foobar", recompose=True)
     players: reactive[dict] = reactive({}, recompose=True)
 
@@ -32,25 +32,10 @@ class PlayerSettingsScreen(Screen):
         new_player = Player(None)
         self.players.update({new_player.id: new_player})
 
-        self.mutate_reactive(DartsApp.players)
+        self.mutate_reactive(self.players)
 
     def compose(self) -> ComposeResult:
         yield wgt.Header()
         yield wgt.Label("Input player names in new lines. Press CTRL+S when done.", expand=True)
         yield wgt.TextArea(show_line_numbers=True, text="")
 
-
-class DartsApp(App):
-    ENABLE_COMMAND_PALETTE = False
-
-    SCREENS = {
-        "settings_players": PlayerSettingsScreen()
-    }
-
-    def on_mount(self) -> None:
-        self.push_screen("settings_players")
-
-
-if __name__ == "__main__":
-    app = DartsApp()
-    app.run()
